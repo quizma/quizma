@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizma Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+        body { background-color: #eef7fc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        
+        .brand-container { text-align: center; margin-bottom: 24px; }
+        .brand-title { font-size: 2.8rem; font-weight: 800; color: #46178f; letter-spacing: -0.5px; }
+        .brand-subtitle { font-size: 1.1rem; font-weight: 600; color: #6a7b8c; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .login-card { background-color: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); width: 100%; max-width: 440px; padding: 40px 32px; text-align: center; }
+        .login-card h2 { font-size: 1.6rem; font-weight: 700; color: #2c3e50; margin-bottom: 24px; }
+        
+        .form-field { margin-bottom: 20px; text-align: left; }
+        .form-field label { display: block; font-size: 0.95rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 14px 16px; font-size: 1.1rem; border: 2px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; color: #334155; outline: none; }
+        
+        /* Zearn Style Custom Elements */
+        .zearn-btn { width: 100%; background-color: #ffcc00; color: #2d3748; border: none; padding: 16px; font-size: 1.2rem; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #d4aa00; transition: transform 0.1s; margin-top: 10px; text-transform: uppercase; }
+        .zearn-btn:hover { background-color: #ffd633; }
+        .zearn-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4aa00; }
+        
+        .divider { margin: 20px 0; display: flex; align-items: center; color: #cbd5e1; font-weight: bold; font-size: 0.9rem; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #cbd5e1; margin: 0 10px; }
+        
+        /* OAuth Sign-In Button stack grid */
+        .oauth-stack { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .oauth-btn { width: 100%; border: 1px solid #dcdcdc; border-radius: 6px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 700; transition: background-color 0.2s, color 0.2s; }
+        .oauth-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+        
+        /* Brand Specific Coloring Rules */
+        .btn-google { background-color: #ffffff; color: #1f1f1f; border-color: #747775; }
+        .btn-google:hover { background-color: #f8fafc; }
+        
+        .btn-discord { background-color: #5865F2; color: #ffffff; border: none; }
+        .btn-discord:hover { background-color: #4752C4; }
+        
+        .btn-reddit { background-color: #FF4500; color: #ffffff; border: none; }
+        .btn-reddit:hover { background-color: #E03D00; }
+        
+        .btn-github { background-color: #24292e; color: #ffffff; border: none; }
+        .btn-github:hover { background-color: #1a1e22; }
+
+        /* Multiplatform Pop Up Modal Styling */
+        .auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal-card { background: white; border-radius: 12px; width: 90%; max-width: 400px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: left; }
+        .modal-card h3 { font-size: 1.4rem; margin-bottom: 15px; text-transform: capitalize; }
+        .modal-card label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 6px; color: #555; }
+        .modal-card input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        .modal-btn-row { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btn { padding: 10px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .modal-confirm { background: #46178f; color: white; }
+        .modal-cancel { background: #e0e0e0; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="brand-container">
+        <div class="brand-title">Quizma</div>
+        <div class="brand-subtitle">Anything Team Production</div>
+    </div>
+
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <form onsubmit="handleRegularLogin(event)">
+            <div class="form-field">
+                <label for="username">Username or Codename</label>
+                <input type="text" id="username" placeholder="Enter your nickname..." required autocomplete="off">
+            </div>
+            <button type="submit" class="zearn-btn">Sign In</button>
+        </form>
+
+        <div class="divider">OR CONNECT WITH</div>
+
+        <!-- STACKED OAUTH MATRIX PLUGINS -->
+        <div class="oauth-stack">
+            <!-- Google -->
+            <button class="oauth-btn btn-google" onclick="openAuthModal('google', '#1a73e8')">
+                <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.76 2.13c1.61-1.49 2.54-3.69 2.54-6.46z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.76-2.13c-.76.51-1.74.82-3.2.82-2.46 0-4.54-1.66-5.28-3.89l-2.84 2.2A8.99 8.99 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.72 10.62A5.4 5.4 0 0 1 3.42 9c0-.56.1-1.11.27-1.62l-2.84-2.2A8.99 8.99 0 0 0 0 9c0 1.69.47 3.27 1.28 4.63l2.44-1.81-.1-.2z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.8 11.43 0 9 0 5.48 0 2.45 2.02 1.13 4.96l2.84 2.2C4.71 4.93 6.69 3.58 9 3.58z"/></svg>
+                Google Account
+            </button>
+            
+            <!-- Discord -->
+            <button class="oauth-btn btn-discord" onclick="openAuthModal('discord', '#5865F2')">
+                <svg viewBox="0 0 127.14 96.36"><path fill="#fff" d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.73-10.93,68.6,68.6,0,0,1-10.64-5.12c.91-.67,1.81-1.37,2.65-2.1a75.22,75.22,0,0,0,72.86,0c.84.73,1.74,1.43,2.65,2.1a68.86,68.86,0,0,1-10.64,5.12,74.74,74.74,0,0,0,6.73,10.93,105.54,105.54,0,0,0,31.05-18.83C129.56,50.7,123.39,27.93,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.9,46,53.9,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.14,46,96.14,53,91,65.69,84.69,65.69Z"/></svg>
+                Discord Channel
+            </button>
+
+            <!-- Reddit -->
+            <button class="oauth-btn btn-reddit" onclick="openAuthModal('reddit', '#FF4500')">
+                <svg viewBox="0 0 20 20"><g fill="#fff"><circle cx="4.61" cy="12.55" r="2.15"/><circle cx="15.39" cy="12.55" r="2.15"/><path d="M17.4,10.51a2.4,2.4,0,0,0-.94-.19,10.53,10.53,0,0,0-4-.82l.84-2.66,2.32.5a1.45,1.45,0,1,0,.26-.64l-2.52-.54a.43.43,0,0,0-.5.3l-.93,2.94a10.23,10.23,0,0,0-4.08.81,2.42,2.42,0,0,0-3,.84,2.46,2.46,0,0,0,.35,3,9.44,9.44,0,0,0,5.77,1.86,9.44,9.44,0,0,0,5.77-1.86,2.44,2.44,0,0,0,.45-3.32Zm-7.4,6a4.26,4.26,0,0,1-3-1.15.43.43,0,1,1,.6-.61,3.41,3.41,0,0,0,4.78,0,.43.43,0,0,1,.6.61A4.27,4.27,0,0,1,10,16.51Z"/></g></svg>
+                Reddit Profile
+            </button>
+
+            <!-- GitHub -->
+            <button class="oauth-btn btn-github" onclick="openAuthModal('github', '#24292e')">
+                <svg viewBox="0 0 24 24"><path fill="#fff" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                GitHub Developer
+            </button>
+        </div>
+    </div>
+
+    <!-- GENERAL AUTHENTICATION FRAMEWORK MODAL -->
+    <div id="authModal" class="auth-modal">
+        <div class="modal-card">
+            <h3 id="modalTitle">Platform Sign-In</h3>
+            <div style="margin-bottom: 15px; font-size: 0.9rem; color: #666;" id="modalDesc">Connect your account directly to the quiz platform.</div>
+            
+            <label id="nameLabel">Profile Account Name:</label>
+            <input type="text" id="platform-name" placeholder="Enter custom name...">
+
+            <label>Profile Image URL (Optional):</label>
+            <input type="text" id="platform-pic" placeholder="Leave blank for auto-generated avatar asset...">
+
+            <div class="modal-btn-row">
+                <button class="modal-btn modal-cancel" onclick="closeAuthModal()">Cancel</button>
+                <button id="modalConfirmBtn" class="modal-btn modal-confirm" onclick="saveAndRedirect()">Confirm Identity</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPlatform = '';
+
+        function openAuthModal(platform, brandingColor) {
+            selectedPlatform = platform;
+            document.getElementById('modalTitle').innerText = `${platform} Security Gateway`;
+            document.getElementById('nameLabel').innerText = `${platform} Username Account:`;
+            document.getElementById('modalConfirmBtn').style.backgroundColor = brandingColor;
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('platform-name').value = '';
+            document.getElementById('platform-pic').value = '';
+        }
+
+        function saveAndRedirect() {
+            const name = document.getElementById('platform-name').value.trim();
+            let pic = document.getElementById('platform-pic').value.trim();
+            
+            if(!name) return alert("Account identity required to connect!");
+            
+            if(!pic) {
+                pic = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`;
+            }
+
+            localStorage.setItem('quizma_user', name);
+            localStorage.setItem('quizma_avatar', pic);
+            localStorage.setItem('quizma_platform_type', selectedPlatform); 
+            localStorage.setItem('quizma_is_oauth', 'true');
+
+            // Redirecting straight to quiz.html
+            window.location.href = 'quiz.html';
+        }
+
+        function handleRegularLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('username').value.trim();
+            if (usernameInput) {
+                localStorage.setItem('quizma_user', usernameInput);
+                localStorage.removeItem('quizma_avatar');
+                localStorage.removeItem('quizma_platform_type');
+                localStorage.removeItem('quizma_is_oauth');
+                window.location.href = 'quiz.html';
+            }
+        }
+    </script>
+</body>
+</html>

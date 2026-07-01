@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizma - Live Session Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; user-select: none; }
+        body { background-color: #f2f2f2; color: #333; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+
+        /* Dynamic Profile Badge */
+        .network-profile-badge {
+            display: none;
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 8px 16px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            align-items: center;
+            gap: 12px;
+            border: 2px solid #333;
+            z-index: 10;
+        }
+        .badge-pic { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background-color: #eee; }
+        .badge-info { display: flex; flex-direction: column; }
+        .badge-name { font-weight: 700; font-size: 0.95rem; color: #333; }
+        .badge-type-tag { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #777; margin-bottom: -2px; }
+
+        .quizma-header { background-color: #46178f; color: #ffffff; padding: 15px 30px; display: flex; justify-content: flex-end; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .team-tag { font-size: 1rem; font-weight: 700; background: #ffffff; color: #46178f; padding: 5px 12px; border-radius: 4px; }
+        
+        .page-container { flex: 1; display: none; padding: 40px 20px; max-width: 1000px; width: 100%; margin: 0 auto; }
+        .page-container.active { display: flex; flex-direction: column; }
+        
+        /* Central Lobby / Selection Board Panel */
+        .lobby-dashboard { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 650px; width: 100%; margin: auto; text-align: center; }
+        .lobby-dashboard h2 { color: #46178f; font-size: 1.8rem; margin-bottom: 8px; }
+        .lobby-dashboard p { color: #666; margin-bottom: 30px; }
+        .mode-selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .mode-card { border: 2px solid #e2e8f0; border-radius: 10px; padding: 25px; cursor: pointer; transition: all 0.2s ease; background: #f8fafc; text-align: left; position: relative; }
+        .mode-card:hover { border-color: #46178f; background: #f3e8ff; transform: translateY(-2px); }
+        .mode-card h3 { font-size: 1.3rem; margin-bottom: 8px; color: #1e293b; }
+        .mode-card p { font-size: 0.9rem; margin-bottom: 0; line-height: 1.4; }
+        .mode-icon-accent { font-size: 2.2rem; margin-bottom: 15px; display: block; }
+        
+        /* Live Matchmaking Status Screen */
+        .matchmaker-loading-screen { display: none; text-align: center; padding: 20px 0; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #46178f; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Creator Form Layout */
+        .creator-panel { text-align: left; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; margin-top: 20px; display: none; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; color: #475569; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 1rem; outline: none; user-select: text; }
+        .form-group input:focus { border-color: #46178f; }
+        .answers-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
+
+        /* Standard Gameplay HUD elements */
+        .quiz-status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 700; color: #555; font-size: 1.1rem; }
+        .lobby-type-indicator { font-size: 0.8rem; background: #e2e8f0; padding: 4px 10px; border-radius: 12px; color: #475569; font-weight: bold; }
+        
+        .question-text { background: #ffffff; padding: 30px; border-radius: 4px; font-size: 1.8rem; font-weight: 700; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 30px; min-height: 110px; display: flex; align-items: center; justify-content: center; }
+        .kahoot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; flex: 1; }
+        .kahoot-card { color: white; font-size: 1.35rem; font-weight: 700; padding: 25px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 0 rgba(0,0,0,0.15); }
+        .kahoot-card:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+        .red-block { background-color: #e21b3c; } .blue-block { background-color: #1368ce; } .yellow-block { background-color: #d89e00; } .green-block { background-color: #26890c; }
+        .shape-icon { font-size: 2rem; margin-right: 20px; }
+        .timer-container { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        .timer-fill { height: 100%; width: 100%; background: #46178f; transition: width 0.1s linear; }
+        
+        .classic-box { background: #ffffff; border-radius: 4px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 550px; width: 100%; margin: auto; text-align: center; }
+        .score-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; font-size: 1.2rem; font-weight: 700; }
+        
+        .action-btn { background: #ffcc00; color: #2d3748; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #d4aa00; text-transform: uppercase; margin-top: 15px; }
+        .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4aa00; }
+        .secondary-btn { background: #64748b; color: white; box-shadow: 0 4px 0 #475569; }
+        .secondary-btn:active { box-shadow: 0 2px 0 #475569; }
+    </style>
+</head>
+<body>
+
+    <!-- USER IDENTITY DISPLAY NODE -->
+    <div id="networkBadge" class="network-profile-badge">
+        <img id="badgeImg" class="badge-pic" src="" alt="Avatar">
+        <div class="badge-info">
+            <span id="badgeType" class="badge-type-tag">Verified User</span>
+            <span id="badgeName" class="badge-name">Guest</span>
+        </div>
+    </div>
+
+    <div class="quizma-header">
+        <div class="team-tag">ANYTHING TEAM</div>
+    </div>
+
+    <!-- PAGE 1: LOBBY GATEWAY HUB SELECTION SCREEN -->
+    <div id="page-hub" class="page-container active">
+        <div class="lobby-dashboard">
+            <h2>Welcome to the Quizma Terminal</h2>
+            <p>Welcome back, <strong id="hub-username-display">User</strong>. Select how you want to join this classroom session.</p>
+            
+            <div id="selection-view">
+                <div class="mode-selection-grid">
+                    <!-- Option A: Random Matchmaking Math Room -->
+                    <div class="mode-card" onclick="app.queueRandomMathMatch()">
+                        <span class="mode-icon-accent">📐</span>
+                        <h3>Random Math Class</h3>
+                        <p>Instantly get matched with active remote users inside a fast-paced fraction & calculation environment.</p>
+                    </div>
+
+                    <!-- Option B: Custom Hosted Class -->
+                    <div class="mode-card" onclick="app.showClassCreator()">
+                        <span class="mode-icon-accent">🏫</span>
+                        <h3>Make Your Own Class</h3>
+                        <p>Open the class blueprint manager to construct custom fields, questions, and launcher arrays.</p>
+                    </div>
+                </div>
+
+                <!-- LIVE INTERACTIVE CLASS CREATOR BUILD PANEL -->
+                <div id="creator-view" class="creator-panel">
+                    <h3 style="color: #46178f; margin-bottom: 10px;">📐 Live Class Builder Workspace</h3>
+                    
+                    <div class="form-group">
+                        <label>Custom Class/Lobby Name</label>
+                        <input type="text" id="custom-class-name" placeholder="e.g., Mr. David's Custom Computing Room">
+                    </div>
+
+                    <div style="background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                        <h4 id="question-build-number" style="font-size: 0.9rem; color: #46178f; margin-bottom: 10px;">Configuring Question #1</h4>
+                        
+                        <div class="form-group">
+                            <label>Question Text</label>
+                            <input type="text" id="build-q-text" placeholder="e.g., What is the value of 5 x 5?">
+                        </div>
+
+                        <label style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 5px; color: #475569;">Answer Choices</label>
+                        <div class="answers-setup-grid">
+                            <input type="text" id="build-opt-0" placeholder="▲ Red Option">
+                            <input type="text" id="build-opt-1" placeholder="◆ Blue Option">
+                            <input type="text" id="build-opt-2" placeholder="● Yellow Option">
+                            <input type="text" id="build-opt-3" placeholder="■ Green Option">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Correct Choice Index</label>
+                            <select id="build-correct-idx">
+                                <option value="0">Red Option (▲)</option>
+                                <option value="1">Blue Option (◆)</option>
+                                <option value="2">Yellow Option (●)</option>
+                                <option value="3">Green Option (■)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.85rem; color: #64748b; font-weight: bold;" id="creator-status-msg">Questions added to current package: 0</div>
+
+                    <div class="btn-row">
+                        <button class="action-btn secondary-btn" style="margin-top:0;" onclick="app.addCreatedQuestion()">Add Question</button>
+                        <button class="action-btn" style="margin-top:0; background: #26890c; color: white; box-shadow: 0 4px 0 #1b6008;" onclick="app.launchCustomCreatedClass()">Launch Class</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matchmaker UI Feedback Queue Tracker -->
+            <div id="matchmaker-view" class="matchmaker-loading-screen">
+                <h3 id="matchmaker-text">Scanning regional server node clusters...</h3>
+                <div class="spinner"></div>
+                <div style="font-size: 0.85rem; color: #777;" id="matchmaker-subtext">Waiting for peers to synchronize variables...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: ACTIVE LIVE QUIZ ARENA INTERFACE -->
+    <div id="page-quiz" class="page-container">
+        <div class="quiz-status-bar">
+            <span id="question-tracker">Question 1 of 20</span>
+            <span id="lobby-indicator" class="lobby-type-indicator">Global Session</span>
+            <span id="score-tracker">Score: 0</span>
+        </div>
+        <div class="timer-container"><div id="timer-bar" class="timer-fill"></div></div>
+        <div id="question-text" class="question-text">Loading question script...</div>
+        <div class="kahoot-grid">
+            <div class="kahoot-card red-block" onclick="app.selectAnswer(0)"><span class="shape-icon">▲</span><span id="opt-0"></span></div>
+            <div class="kahoot-card blue-block" onclick="app.selectAnswer(1)"><span class="shape-icon">◆</span><span id="opt-1"></span></div>
+            <div class="kahoot-card yellow-block" onclick="app.selectAnswer(2)"><span class="shape-icon">●</span><span id="opt-2"></span></div>
+            <div class="kahoot-card green-block" onclick="app.selectAnswer(3)"><span class="shape-icon">■</span><span id="opt-3"></span></div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: SUMMARY SCOREBOARD -->
+    <div id="page-scores" class="page-container">
+        <div class="classic-box">
+            <h2>Lobby Final Rankings</h2>
+            <div id="leaderboard-rows" style="margin-bottom: 20px;"></div>
+            <button class="action-btn" onclick="window.location.href='quiz.html'">Return to Hub</button>
+        </div>
+    </div>
+
+    <script>
+        class QuizmaEngine {
+            constructor() {
+                this.activeLobbyType = "Global Server";
+                this.questions = [];
+                this.temporaryBuildPackage = []; // Holds items during custom construction
+                
+                this.mathQuestions = [
+                    { q: "What is 1/2 + 1/4?", options: ["2/4", "3/4", "2/6", "1/6"], correct: 1 },
+                    { q: "Convert 3/5 into a decimal value:", options: ["0.3", "0.5", "0.6", "0.75"], correct: 2 },
+                    { q: "Simplify the fraction 8/12 to its lowest form:", options: ["4/6", "2/3", "3/4", "1/3"], correct: 1 },
+                    { q: "What is 3/4 of 24?", options: ["12", "16", "18", "20"], correct: 2 },
+                    { q: "Which fraction is equivalent to 1/3?", options: ["3/9", "2/9", "4/10", "3/6"], correct: 0 },
+                    { q: "What is 1 whole minus 3/8?", options: ["5/8", "4/8", "3/8", "6/8"], correct: 0 }
+                ];
+                
+                this.username = localStorage.getItem('quizma_user') || "Guest";
+                this.avatar = localStorage.getItem('quizma_avatar') || "";
+                this.platform = localStorage.getItem('quizma_platform_type') || "";
+                this.isOAuth = localStorage.getItem('quizma_is_oauth') === 'true';
+                
+                this.currentQ = 0;
+                this.score = 0;
+                this.timer = null;
+                this.lockAnswer = false;
+
+                this.renderUserBadgeHUD();
+            }
+
+            renderUserBadgeHUD() {
+                document.getElementById('hub-username-display').innerText = this.username;
+                if (this.isOAuth && this.avatar) {
+                    document.getElementById('badgeImg').src = this.avatar;
+                    document.getElementById('badgeName').innerText = this.username;
+                    document.getElementById('badgeType').innerText = `${this.platform} linked`;
+                    
+                    const badge = document.getElementById('networkBadge');
+                    const colors = { 'google': '#1a73e8', 'discord': '#5865F2', 'reddit': '#FF4500', 'github': '#24292e' };
+                    badge.style.borderColor = colors[this.platform] || '#46178f';
+                    badge.style.display = 'flex';
+                }
+            }
+
+            queueRandomMathMatch() {
+                document.getElementById('creator-view').style.display = 'none';
+                document.getElementById('selection-view').style.display = 'none';
+                const loader = document.getElementById('matchmaker-view');
+                loader.style.display = 'block';
+                
+                this.activeLobbyType = "Math Public Room";
+                this.questions = this.mathQuestions;
+
+                setTimeout(() => {
+                    document.getElementById('matchmaker-text').innerText = "Found open room seat: [Math_Room_#4092]...";
+                    document.getElementById('matchmaker-subtext').innerText = "Synchronizing teacher framework configurations...";
+                }, 1200);
+
+                setTimeout(() => {
+                    this.startSessionGameplay();
+                }, 2600);
+            }
+
+            // RECONSTRUCTED WORKFLOW FOR LIVE CLASS BUILDER
+            showClassCreator() {
+                const view = document.getElementById('creator-view');
+                if (view.style.display === "block") {
+                    view.style.display = "none";
+                } else {
+                    view.style.display = "block";
+                    this.temporaryBuildPackage = [];
+                    this.updateCreatorStatus();
+                }
+            }
+
+            addCreatedQuestion() {
+                const qText = document.getElementById('build-q-text').value.trim();
+                const opt0 = document.getElementById('build-opt-0').value.trim();
+                const opt1 = document.getElementById('build-opt-1').value.trim();
+                const opt2 = document.getElementById('build-opt-2').value.trim();
+                const opt3 = document.getElementById('build-opt-3').value.trim();
+                const correctIdx = parseInt(document.getElementById('build-correct-idx').value);
+
+                if (!qText || !opt0 || !opt1 || !opt2 || !opt3) {
+                    alert("Please fill out the question and all 4 choice options first!");
+                    return;
+                }
+
+                // Append question structured mapping to local working variable array
+                this.temporaryBuildPackage.push({
+                    q: qText,
+                    options: [opt0, opt1, opt2, opt3],
+                    correct: correctIdx
+                });
+
+                // Clear input fields for next question insertion
+                document.getElementById('build-q-text').value = '';
+                document.getElementById('build-opt-0').value = '';
+                document.getElementById('build-opt-1').value = '';
+                document.getElementById('build-opt-2').value = '';
+                document.getElementById('build-opt-3').value = '';
+                
+                this.updateCreatorStatus();
+            }
+
+            updateCreatorStatus() {
+                const count = this.temporaryBuildPackage.length;
+                document.getElementById('creator-status-msg').innerText = `Questions added to current package: ${count}`;
+                document.getElementById('question-build-number').innerText = `Configuring Question #${count + 1}`;
+            }
+
+            launchCustomCreatedClass() {
+                let className = document.getElementById('custom-class-name').value.trim();
+                if (!className) className = "Custom Hosted Class";
+
+                // Fallback check if user forgot to click 'Add Question' on their last text entry
+                const fallbackQ = document.getElementById('build-q-text').value.trim();
+                if (fallbackQ && this.temporaryBuildPackage.length === 0) {
+                    this.addCreatedQuestion();
+                }
+
+                if (this.temporaryBuildPackage.length === 0) {
+                    alert("You need to add at least 1 question to launch your class blueprint!");
+                    return;
+                }
+
+                // Save data arrays directly to variables and run session gameplay instantly
+                this.questions = this.temporaryBuildPackage;
+                this.activeLobbyType = className;
+                
+                // Pack encoded version inside localStorage string data just in case
+                const encodedString = btoa(unescape(encodeURIComponent(JSON.stringify(this.questions))));
+                localStorage.setItem('quizma_custom_course', encodedString);
+
+                this.startSessionGameplay();
+            }
+
+            startSessionGameplay() {
+                this.currentQ = 0;
+                this.score = 0;
+                document.getElementById('lobby-indicator').innerText = this.activeLobbyType;
+                this.loadQuestion();
+                this.goToPage('page-quiz');
+            }
+
+            goToPage(id) {
+                document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            loadQuestion() {
+                this.lockAnswer = false;
+                
+                document.getElementById('question-tracker').innerText = `Question ${this.currentQ + 1} of ${this.questions.length}`;
+                document.getElementById('score-tracker').innerText = `Score: ${this.score}`;
+
+                const data = this.questions[this.currentQ];
+                document.getElementById('question-text').innerText = data.q;
+                for(let i=0; i<4; i++) document.getElementById(`opt-${i}`).innerText = data.options[i];
+                this.startTimer();
+            }
+
+            startTimer() {
+                let counter = 15;
+                const bar = document.getElementById('timer-bar');
+                clearInterval(this.timer);
+                this.timer = setInterval(() => {
+                    counter -= 0.1;
+                    bar.style.width = `${(counter / 15) * 100}%`;
+                    if(counter <= 0) { clearInterval(this.timer); this.selectAnswer(-1); }
+                }, 100);
+            }
+
+            selectAnswer(idx) {
+                if(this.lockAnswer) return;
+                this.lockAnswer = true;
+                clearInterval(this.timer);
+                
+                if(idx === this.questions[this.currentQ].correct) {
+                    this.score += 100;
+                    document.getElementById('score-tracker').innerText = `Score: ${this.score}`;
+                }
+
+                setTimeout(() => {
+                    this.currentQ++;
+                    if(this.currentQ < this.questions.length) this.loadQuestion();
+                    else this.showScores();
+                }, 1000);
+            }
+
+            showScores() {
+                this.goToPage('page-scores');
+                const target = document.getElementById('leaderboard-rows');
+                
+                const maxPossible = this.questions.length * 100;
+                const board = [
+                    { name: this.username, score: this.score },
+                    { name: "Markel", score: Math.floor(maxPossible * 0.8) },
+                    { name: "Noble", score: Math.floor(maxPossible * 0.55) }
+                ].sort((a,b) => b.score - a.score);
+
+                target.innerHTML = '';
+                board.forEach((p, r) => {
+                    target.innerHTML += `<div class="score-row"><span>#${r+1} ${p.name}</span><span>${p.score} pts</span></div>`;
+                });
+            }
+        }
+        const app = new QuizmaEngine();
+    </script>
+</body>
+</html>
