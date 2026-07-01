@@ -80,6 +80,14 @@
         .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4aa00; }
         .secondary-btn { background: #64748b; color: white; box-shadow: 0 4px 0 #475569; }
         .secondary-btn:active { box-shadow: 0 2px 0 #475569; }
+
+        @media (max-width: 600px) {
+            .mode-selection-grid { grid-template-columns: 1fr; }
+            .kahoot-grid { grid-template-columns: 1fr; }
+            .answers-setup-grid { grid-template-columns: 1fr; }
+            .question-text { font-size: 1.2rem; min-height: 80px; }
+            .kahoot-card { padding: 18px 12px; }
+        }
     </style>
 </head>
 <body>
