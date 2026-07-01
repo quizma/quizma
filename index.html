@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizma Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="logo.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
         body { background-color: #eef7fc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
@@ -79,6 +80,13 @@
 
         <!-- STACKED OAUTH MATRIX PLUGINS -->
         <div class="oauth-stack">
+
+            <form action="https://quizma.github.io/install/">
+                <button class="oauth-btn btn-github" onclick="openAuthModal('github', '#24292e')">
+                    Install
+                </button>
+            </form>
+
             <!-- Google -->
             <button class="oauth-btn btn-google" onclick="openAuthModal('google', '#1a73e8')">
                 <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7l2.76 2.13c1.61-1.49 2.54-3.69 2.54-6.46z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.76-2.13c-.76.51-1.74.82-3.2.82-2.46 0-4.54-1.66-5.28-3.89l-2.84 2.2A8.99 8.99 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.72 10.62A5.4 5.4 0 0 1 3.42 9c0-.56.1-1.11.27-1.62l-2.84-2.2A8.99 8.99 0 0 0 0 9c0 1.69.47 3.27 1.28 4.63l2.44-1.81-.1-.2z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.8 11.43 0 9 0 5.48 0 2.45 2.02 1.13 4.96l2.84 2.2C4.71 4.93 6.69 3.58 9 3.58z"/></svg>
