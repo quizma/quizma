@@ -8,35 +8,16 @@
     <link rel="icon" href="logo.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; user-select: none; }
-        body { background-color: #f2f2f2; color: #333; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+        body { background-color: #ffffff; color: #333; min-height: 100vh; display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
+        .background-media { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .background-overlay { position: fixed; inset: 0; background: rgb(231, 231, 231); z-index: -1; }
 
-        /* Dynamic Profile Badge */
-        .network-profile-badge {
-            display: none;
-            position: absolute;
-            top: 12px;
-            left: 20px;
-            background: #ffffff;
-            padding: 8px 16px;
-            border-radius: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            align-items: center;
-            gap: 12px;
-            border: 2px solid #333;
-            z-index: 10;
-        }
-        .badge-pic { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background-color: #eee; }
-        .badge-info { display: flex; flex-direction: column; }
-        .badge-name { font-weight: 700; font-size: 0.95rem; color: #333; }
-        .badge-type-tag { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #777; margin-bottom: -2px; }
-
-        .quizma-header { background-color: #46178f; color: #ffffff; padding: 15px 30px; display: flex; justify-content: flex-end; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .quizma-header { background-color: #5417ae; color: #ffffff; padding: 15px 30px; display: flex; justify-content: flex-end; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .team-tag { font-size: 1rem; font-weight: 700; background: #ffffff; color: #46178f; padding: 5px 12px; border-radius: 4px; }
-        
+
         .page-container { flex: 1; display: none; padding: 40px 20px; max-width: 1000px; width: 100%; margin: 0 auto; }
         .page-container.active { display: flex; flex-direction: column; }
-        
-        /* Central Lobby / Selection Board Panel */
+
         .lobby-dashboard { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 650px; width: 100%; margin: auto; text-align: center; }
         .lobby-dashboard h2 { color: #46178f; font-size: 1.8rem; margin-bottom: 8px; }
         .lobby-dashboard p { color: #666; margin-bottom: 30px; }
@@ -46,13 +27,11 @@
         .mode-card h3 { font-size: 1.3rem; margin-bottom: 8px; color: #1e293b; }
         .mode-card p { font-size: 0.9rem; margin-bottom: 0; line-height: 1.4; }
         .mode-icon-accent { font-size: 2.2rem; margin-bottom: 15px; display: block; }
-        
-        /* Live Matchmaking Status Screen */
+
         .matchmaker-loading-screen { display: none; text-align: center; padding: 20px 0; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #46178f; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Creator Form Layout */
+
         .creator-panel { text-align: left; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; margin-top: 20px; display: none; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; color: #475569; }
@@ -61,10 +40,9 @@
         .answers-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; }
 
-        /* Standard Gameplay HUD elements */
         .quiz-status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 700; color: #555; font-size: 1.1rem; }
         .lobby-type-indicator { font-size: 0.8rem; background: #e2e8f0; padding: 4px 10px; border-radius: 12px; color: #475569; font-weight: bold; }
-        
+
         .question-text { background: #ffffff; padding: 30px; border-radius: 4px; font-size: 1.8rem; font-weight: 700; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 30px; min-height: 110px; display: flex; align-items: center; justify-content: center; }
         .kahoot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; flex: 1; }
         .kahoot-card { color: white; font-size: 1.35rem; font-weight: 700; padding: 25px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 0 rgba(0,0,0,0.15); }
@@ -73,14 +51,50 @@
         .shape-icon { font-size: 2rem; margin-right: 20px; }
         .timer-container { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
         .timer-fill { height: 100%; width: 100%; background: #46178f; transition: width 0.1s linear; }
-        
+
         .classic-box { background: #ffffff; border-radius: 4px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 550px; width: 100%; margin: auto; text-align: center; }
         .score-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; font-size: 1.2rem; font-weight: 700; }
-        
+
         .action-btn { background: #ffcc00; color: #2d3748; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #d4aa00; text-transform: uppercase; margin-top: 15px; }
         .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4aa00; }
         .secondary-btn { background: #64748b; color: white; box-shadow: 0 4px 0 #475569; }
         .secondary-btn:active { box-shadow: 0 2px 0 #475569; }
+
+        .user-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow: auto; }
+        .user-chip { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .user-chip strong { font-size: 0.95rem; }
+        .user-chip small { color: #64748b; }
+        .profile-card { margin-top: 8px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        
+        .network-profile-badge { position: fixed; top: 20px; left: 20px; background: white; border: 3px solid #46178f; border-radius: 10px; padding: 12px; display: none; gap: 12px; align-items: center; box-shadow: 0 4px 12px rgba(70, 23, 143, 0.2); z-index: 100; }
+        .badge-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #46178f; }
+        .badge-info { display: flex; flex-direction: column; gap: 2px; }
+        .badge-type-tag { font-size: 0.65rem; font-weight: 600; color: #46178f; text-transform: uppercase; }
+        .badge-name { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+        
+        .emulator-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); z-index: 200; padding: 20px; align-items: center; justify-content: center; }
+        .emulator-card { background: white; border-radius: 12px; width: min(96vw, 1100px); height: min(90vh, 760px); overflow: hidden; display: flex; flex-direction: column; }
+        .emulator-topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #46178f; color: white; }
+        .emulator-frame { flex: 1; width: 100%; border: 0; background: #000; }
+
+        .chat-sidebar { position: fixed; right: 20px; top: 92px; width: 300px; height: calc(100vh - 120px); background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 10px 26px rgba(0,0,0,0.12); display: flex; flex-direction: column; overflow: hidden; z-index: 50; }
+        .chat-sidebar.collapsed { display: none; }
+        .chat-header { background: #46178f; color: white; padding: 14px 16px; font-weight: 700; }
+        .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; }
+        .chat-bubble { background: white; border-radius: 10px; padding: 10px 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        .chat-bubble-top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; font-size: 0.78rem; color: #64748b; }
+        .chat-bubble strong { color: #1f2937; font-size: 0.84rem; }
+        .chat-bubble-text { color: #334155; font-size: 0.95rem; line-height: 1.35; word-break: break-word; }
+        .chat-empty { color: #64748b; font-size: 0.9rem; text-align: center; margin-top: 20px; }
+        .chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e2e8f0; background: white; }
+        .chat-input-row input { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; outline: none; user-select: text; }
+        .chat-input-row input:focus { border-color: #46178f; }
+        .chat-send-btn { margin-top: 0; padding: 10px 12px; }
+
+        @media (max-width: 900px) {
+            .chat-sidebar { position: static; width: 100%; height: 360px; margin: 20px auto 0; }
+            .page-container.active { padding-right: 20px; }
+        }
 
         @media (max-width: 600px) {
             .mode-selection-grid { grid-template-columns: 1fr; }
@@ -92,6 +106,8 @@
     </style>
 </head>
 <body>
+    <div class="background-overlay"></div>
+    <audio id="bg-audio" src="song.mp3" autoplay loop></audio>
 
     <!-- USER IDENTITY DISPLAY NODE -->
     <div id="networkBadge" class="network-profile-badge">
@@ -205,14 +221,44 @@
         <div class="classic-box">
             <h2>Lobby Final Rankings</h2>
             <div id="leaderboard-rows" style="margin-bottom: 20px;"></div>
-            <button class="action-btn" onclick="window.location.href='quiz.html'">Return to Hub</button>
+            <button class="action-btn" onclick="app.openSonicEmulator()">Play Sonic 4 online ad</button>
+            <button class="action-btn secondary-btn" onclick="window.location.href='quiz.html'">Return to Hub</button>
         </div>
     </div>
+
+    <div id="social-hub" class="page-container">
+        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 700px; width: 100%; margin: auto;">
+            <h3 style="color: #46178f; margin-bottom: 10px;">🔎 Find users</h3>
+            <input id="user-search-input" placeholder="Search by name or bio" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px;" />
+            <button class="action-btn" onclick="app.searchUsers()">Search</button>
+            <div id="user-results" class="user-list"></div>
+        </div>
+    </div>
+
+    <div id="sonicEmulatorModal" class="emulator-modal">
+        <div class="emulator-card">
+            <div class="emulator-topbar">
+                <strong>Sonic 4 Episode I • Wii Emulator</strong>
+                <button class="action-btn secondary-btn" style="margin-top: 0; padding: 8px 12px;" onclick="app.closeSonicEmulator()">Close</button>
+            </div>
+            <iframe id="sonicEmulatorFrame" class="emulator-frame" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <button id="chat-toggle-btn" class="action-btn secondary-btn" style="position: fixed; right: 20px; top: 56px; z-index: 60; margin-top: 0; padding: 8px 12px;" onclick="app.toggleChatSidebar()">Hide Chat</button>
+    <aside id="chat-sidebar" class="chat-sidebar" aria-label="Local chat sidebar">
+        <div class="chat-header">Local Chat</div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-row">
+            <input id="chat-input" type="text" placeholder="Say something..." maxlength="220">
+            <button id="chat-send-btn" class="action-btn chat-send-btn" type="button">Send</button>
+        </div>
+    </aside>
 
     <script>
         class QuizmaEngine {
             constructor() {
-                this.activeLobbyType = "Global Server";
+                this.activeLobbyType = "Local Quiz Room";
                 this.questions = [];
                 this.temporaryBuildPackage = []; // Holds items during custom construction
                 
@@ -222,25 +268,233 @@
                     { q: "Simplify the fraction 8/12 to its lowest form:", options: ["4/6", "2/3", "3/4", "1/3"], correct: 1 },
                     { q: "What is 3/4 of 24?", options: ["12", "16", "18", "20"], correct: 2 },
                     { q: "Which fraction is equivalent to 1/3?", options: ["3/9", "2/9", "4/10", "3/6"], correct: 0 },
-                    { q: "What is 1 whole minus 3/8?", options: ["5/8", "4/8", "3/8", "6/8"], correct: 0 }
+                    { q: "What is 1 whole minus 3/8?", options: ["5/8", "4/8", "3/8", "6/8"], correct: 0 },
+                    { q: "What is 7 × 8?", options: ["48", "54", "56", "64"], correct: 2 },
+                    { q: "What is 144 ÷ 12?", options: ["10", "11", "12", "13"], correct: 2 },
+                    { q: "What is 15% of 200?", options: ["20", "25", "30", "35"], correct: 1 },
+                    { q: "What is the next number in the pattern: 2, 4, 8, 16, __?", options: ["18", "24", "32", "40"], correct: 2 },
+                    { q: "Solve: 6 + 4 × 3", options: ["18", "20", "24", "30"], correct: 1 },
+                    { q: "If a triangle has 3 sides, how many sides does a hexagon have?", options: ["4", "5", "6", "8"], correct: 2 }
                 ];
                 
                 this.username = localStorage.getItem('quizma_user') || "Guest";
                 this.avatar = localStorage.getItem('quizma_avatar') || "";
                 this.platform = localStorage.getItem('quizma_platform_type') || "";
                 this.isOAuth = localStorage.getItem('quizma_is_oauth') === 'true';
+                this.progress = JSON.parse(localStorage.getItem('quizma_profile') || '{}');
                 
                 this.currentQ = 0;
                 this.score = 0;
                 this.timer = null;
                 this.lockAnswer = false;
+                this.chatChannel = null;
+                this.chatMessages = [];
+                this.friends = [];
 
+                this.seedLeaderboardBots();
                 this.renderUserBadgeHUD();
+                this.initLocalChat();
+                this.initFriendsBar();
+            }
+
+            seedLeaderboardBots() {
+                const leaderboard = JSON.parse(localStorage.getItem('quizma_leaderboard') || '[]');
+                const botEntries = [
+                    { username: 'Steve', displayName: 'Steve', score: 2450, bestScore: 2450, isBot: true },
+                    { username: 'Mckale', displayName: 'Mckale (banned)', score: 2210, bestScore: 2210, isBot: true },
+                    { username: 'Immaculate', displayName: 'Immaculate (Featured User)', score: 2380, bestScore: 2380, isBot: true },
+                    { username: 'bobsonjr', displayName: 'bobsonjr', score: 2140, bestScore: 2140, isBot: true },
+                    { username: 'messijr', displayName: 'messijr', score: 2090, bestScore: 2090, isBot: true },
+                    { username: 'ijustwantedabrother', displayName: 'lillylovesavatarworld (banned for being cringe)', score: 1980, bestScore: 1980, isBot: true }
+                ];
+
+                const merged = [...leaderboard];
+                botEntries.forEach(bot => {
+                    const exists = merged.some(entry => String(entry.username).toLowerCase() === bot.username.toLowerCase());
+                    if (!exists) {
+                        merged.push(bot);
+                    }
+                });
+
+                localStorage.setItem('quizma_leaderboard', JSON.stringify(merged));
+            }
+
+            initLocalChat() {
+                this.chatMessages = JSON.parse(localStorage.getItem('quizma_local_chat_messages') || '[]');
+                this.renderChatMessages();
+
+                if ('BroadcastChannel' in window) {
+                    this.chatChannel = new BroadcastChannel('quizma_local_chat');
+                    this.chatChannel.onmessage = (event) => {
+                        if (event.data?.type === 'chat-message') {
+                            this.handleIncomingChatMessage(event.data.message);
+                        }
+                    };
+                }
+
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'quizma_local_chat_messages') {
+                        this.chatMessages = JSON.parse(event.newValue || '[]');
+                        this.renderChatMessages();
+                    }
+                });
+
+                const input = document.getElementById('chat-input');
+                const sendBtn = document.getElementById('chat-send-btn');
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        this.sendChatMessage();
+                    }
+                });
+                sendBtn.addEventListener('click', () => this.sendChatMessage());
+            }
+
+            escapeHtml(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            sendChatMessage() {
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if (!text) return;
+
+                const message = {
+                    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                    username: this.username,
+                    text,
+                    time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                };
+
+                this.chatMessages = [...this.chatMessages, message].slice(-80);
+                this.persistChatMessages();
+                this.renderChatMessages();
+                input.value = '';
+
+                if (this.chatChannel) {
+                    this.chatChannel.postMessage({ type: 'chat-message', message });
+                }
+            }
+
+            handleIncomingChatMessage(message) {
+                if (!message || this.chatMessages.some(entry => entry.id === message.id)) return;
+                this.chatMessages = [...this.chatMessages, message].slice(-80);
+                this.persistChatMessages();
+                this.renderChatMessages();
+            }
+
+            persistChatMessages() {
+                localStorage.setItem('quizma_local_chat_messages', JSON.stringify(this.chatMessages));
+            }
+
+            renderChatMessages() {
+                const container = document.getElementById('chat-messages');
+                if (!container) return;
+
+                if (!this.chatMessages.length) {
+                    container.innerHTML = '<div class="chat-empty">No messages yet. Start the conversation.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                this.chatMessages.forEach(message => {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble';
+                    bubble.innerHTML = `
+                        <div class="chat-bubble-top">
+                            <strong>${this.escapeHtml(message.username || 'User')}</strong>
+                            <span>${this.escapeHtml(message.time || '')}</span>
+                        </div>
+                        <div class="chat-bubble-text">${this.escapeHtml(message.text || '')}</div>
+                    `;
+                    container.appendChild(bubble);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+
+            initFriendsBar() {
+                this.friends = this.getFriends();
+                this.renderFriendsBar();
+
+                const input = document.getElementById('friend-username-input');
+                if (input) {
+                    input.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            this.addFriend();
+                        }
+                    });
+                }
+            }
+
+            getFriends() {
+                const saved = JSON.parse(localStorage.getItem('quizma_friends') || '[]');
+                return saved.filter((friend, index, arr) => arr.findIndex(entry => String(entry.username).toLowerCase() === String(friend.username).toLowerCase()) === index);
+            }
+
+            addFriend() {
+                const input = document.getElementById('friend-username-input');
+                const rawName = input?.value.trim() || '';
+                if (!rawName) return;
+
+                const normalized = rawName.replace(/\s+/g, ' ');
+                if (normalized.toLowerCase() === this.username.toLowerCase()) {
+                    alert('You cannot add yourself as a friend.');
+                    return;
+                }
+
+                const existing = this.getFriends();
+                if (existing.some(friend => String(friend.username).toLowerCase() === normalized.toLowerCase())) {
+                    alert('That friend is already on your list.');
+                    return;
+                }
+
+                const localUsers = this.getLocalUsers();
+                const matchedUser = localUsers.find(user => [user.username, user.displayName].some(value => String(value).toLowerCase() === normalized.toLowerCase()));
+
+                const friendEntry = {
+                    username: matchedUser?.username || normalized,
+                    displayName: matchedUser?.displayName || normalized,
+                    bio: matchedUser?.bio || 'Local friend',
+                    addedAt: new Date().toISOString()
+                };
+
+                const updatedFriends = [...existing, friendEntry];
+                localStorage.setItem('quizma_friends', JSON.stringify(updatedFriends));
+                this.friends = updatedFriends;
+                this.renderFriendsBar();
+                if (input) input.value = '';
+            }
+
+            renderFriendsBar() {
+                const list = document.getElementById('friends-list');
+                if (!list) return;
+
+                if (!this.friends.length) {
+                    list.innerHTML = '<span class="friend-chip">No friends yet</span>';
+                    return;
+                }
+
+                list.innerHTML = this.friends.map(friend => `<span class="friend-chip">${this.escapeHtml(friend.displayName || friend.username)}</span>`).join('');
+            }
+
+            toggleChatSidebar() {
+                const sidebar = document.getElementById('chat-sidebar');
+                const toggleBtn = document.getElementById('chat-toggle-btn');
+                if (!sidebar || !toggleBtn) return;
+
+                const isCollapsed = sidebar.classList.toggle('collapsed');
+                toggleBtn.innerText = isCollapsed ? 'Show Chat' : 'Hide Chat';
             }
 
             renderUserBadgeHUD() {
                 document.getElementById('hub-username-display').innerText = this.username;
-                if (this.isOAuth && this.avatar) {
+                if (this.avatar) {
                     document.getElementById('badgeImg').src = this.avatar;
                     document.getElementById('badgeName').innerText = this.username;
                     document.getElementById('badgeType').innerText = `${this.platform} linked`;
@@ -252,6 +506,55 @@
                 }
             }
 
+            getLocalUsers() {
+                const seeded = [
+                    { username: 'Ava', displayName: 'Ava Chen', bio: 'Loves math and streaks.', score: 1840, streak: 6, bestScore: 1840 },
+                    { username: 'Noah', displayName: 'Noah Rivera', bio: 'Speed quiz challenger.', score: 1620, streak: 4, bestScore: 1620 },
+                    { username: 'Leah', displayName: 'Leah Brooks', bio: 'Builds custom study rooms.', score: 1430, streak: 8, bestScore: 1430 }
+                ];
+                const saved = JSON.parse(localStorage.getItem('quizma_local_users') || '[]');
+                return [...seeded, ...saved].filter((user, index, arr) => arr.findIndex(entry => entry.username.toLowerCase() === user.username.toLowerCase()) === index);
+            }
+
+            searchUsers() {
+                const query = document.getElementById('user-search-input').value.trim().toLowerCase();
+                const users = this.getLocalUsers().filter(user => {
+                    if (!query) return true;
+                    return [user.username, user.displayName, user.bio].some(value => String(value).toLowerCase().includes(query));
+                });
+                const container = document.getElementById('user-results');
+                container.innerHTML = '';
+                if (!users.length) {
+                    container.innerHTML = '<div class="user-chip"><strong>No users found</strong></div>';
+                    return;
+                }
+                users.forEach(user => {
+                    const chip = document.createElement('div');
+                    chip.className = 'user-chip';
+                    chip.innerHTML = `<div><strong>${user.displayName || user.username}</strong><br><small>${user.bio || 'Quizma user'}</small></div><button class="action-btn secondary-btn" style="margin-top:0; padding:8px 10px;" onclick="app.showUserProfile('${user.username}')">View</button>`;
+                    container.appendChild(chip);
+                });
+            }
+
+            showUserProfile(username) {
+                const user = this.getLocalUsers().find(entry => entry.username.toLowerCase() === username.toLowerCase());
+                if (!user) return;
+                document.getElementById('user-results').innerHTML = `<div class="profile-card"><strong>${user.displayName || user.username}</strong><br><small>${user.bio || 'Quizma user'}</small><br><br>Score: ${user.score || 0}<br>Streak: ${user.streak || 0}<br>Best: ${user.bestScore || 0}</div>`;
+            }
+
+            openSonicEmulator() {
+                const emulatorUrl = 'https://www.retrogames.cc/play/sonic-the-hedgehog-4-episode-i-wii.html';
+                const modal = document.getElementById('sonicEmulatorModal');
+                const frame = document.getElementById('sonicEmulatorFrame');
+                frame.src = emulatorUrl;
+                modal.style.display = 'flex';
+            }
+
+            closeSonicEmulator() {
+                document.getElementById('sonicEmulatorModal').style.display = 'none';
+                document.getElementById('sonicEmulatorFrame').src = 'about:blank';
+            }
+
             queueRandomMathMatch() {
                 document.getElementById('creator-view').style.display = 'none';
                 document.getElementById('selection-view').style.display = 'none';
@@ -260,6 +563,7 @@
                 
                 this.activeLobbyType = "Math Public Room";
                 this.questions = this.mathQuestions;
+                this.saveProgress(this.score);
 
                 setTimeout(() => {
                     document.getElementById('matchmaker-text').innerText = "Found open room seat: [Math_Room_#4092]...";
@@ -337,12 +641,42 @@
                 // Save data arrays directly to variables and run session gameplay instantly
                 this.questions = this.temporaryBuildPackage;
                 this.activeLobbyType = className;
+                this.saveProgress(this.score);
                 
                 // Pack encoded version inside localStorage string data just in case
                 const encodedString = btoa(unescape(encodeURIComponent(JSON.stringify(this.questions))));
                 localStorage.setItem('quizma_custom_course', encodedString);
 
                 this.startSessionGameplay();
+            }
+
+            saveProgress(score) {
+                const profile = JSON.parse(localStorage.getItem('quizma_profile') || '{}');
+                const nextScore = Math.max(Number(profile.score || 0), Number(score || 0));
+                const nextBest = Math.max(Number(profile.bestScore || 0), Number(score || 0));
+                const updated = {
+                    ...profile,
+                    score: nextScore,
+                    bestScore: nextBest,
+                    quizzesPlayed: Number(profile.quizzesPlayed || 0) + 1,
+                    lastPlayed: new Date().toISOString()
+                };
+                localStorage.setItem('quizma_profile', JSON.stringify(updated));
+                localStorage.setItem('quizma_score', updated.score);
+                localStorage.setItem('quizma_best_score', updated.bestScore);
+                localStorage.setItem('quizma_quizzes_played', updated.quizzesPlayed);
+                localStorage.setItem('quizma_last_played', updated.lastPlayed);
+
+                const leaderboard = JSON.parse(localStorage.getItem('quizma_leaderboard') || '[]');
+                const existing = leaderboard.find(entry => entry.username === this.username);
+                if (existing) {
+                    existing.score = nextScore;
+                    existing.bestScore = nextBest;
+                } else {
+                    leaderboard.push({ username: this.username, displayName: this.username, score: nextScore, bestScore: nextBest });
+                }
+                localStorage.setItem('quizma_leaderboard', JSON.stringify(leaderboard));
+                this.progress = updated;
             }
 
             startSessionGameplay() {
@@ -399,14 +733,13 @@
             }
 
             showScores() {
+                this.saveProgress(this.score);
                 this.goToPage('page-scores');
                 const target = document.getElementById('leaderboard-rows');
-                
-                const maxPossible = this.questions.length * 100;
+                const leaderboard = JSON.parse(localStorage.getItem('quizma_leaderboard') || '[]');
                 const board = [
                     { name: this.username, score: this.score },
-                    { name: "Markel", score: Math.floor(maxPossible * 0.8) },
-                    { name: "Noble", score: Math.floor(maxPossible * 0.55) }
+                    ...leaderboard.map(user => ({ name: user.displayName || user.username, score: user.score || 0 }))
                 ].sort((a,b) => b.score - a.score);
 
                 target.innerHTML = '';
@@ -416,6 +749,15 @@
             }
         }
         const app = new QuizmaEngine();
+
+        const bgAudio = document.getElementById('bg-audio');
+        const startBackgroundAudio = () => {
+            if (bgAudio && typeof bgAudio.play === 'function') {
+                bgAudio.play().catch(() => {});
+            }
+        };
+        document.addEventListener('click', startBackgroundAudio, { once: true });
+        window.addEventListener('load', startBackgroundAudio);
     </script>
 </body>
 </html>

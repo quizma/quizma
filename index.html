@@ -8,21 +8,23 @@
     <link rel="icon" href="logo.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
-        body { background-color: #eef7fc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; overflow-x: hidden; }
+        .background-media { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .background-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.297); z-index: -1; }
         
         .brand-container { text-align: center; margin-bottom: 24px; }
-        .brand-title { font-size: 2.8rem; font-weight: 800; color: #46178f; letter-spacing: -0.5px; }
-        .brand-subtitle { font-size: 1.1rem; font-weight: 600; color: #6a7b8c; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .brand-title { font-size: 2.8rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
+        .brand-subtitle { font-size: 1.1rem; font-weight: 600; color: #ffffff; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
         
-        .login-card { background-color: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); width: 100%; max-width: 440px; padding: 40px 32px; text-align: center; }
-        .login-card h2 { font-size: 1.6rem; font-weight: 700; color: #2c3e50; margin-bottom: 24px; }
+        .login-card { background-color: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgb(0, 0, 0); width: 100%; max-width: 440px; padding: 40px 32px; text-align: center; }
+        .login-card h2 { font-size: 1.6rem; font-weight: 700; color: #000000; margin-bottom: 24px; }
         
         .form-field { margin-bottom: 20px; text-align: left; }
-        .form-field label { display: block; font-size: 0.95rem; font-weight: 700; color: #4a5568; margin-bottom: 8px; }
-        input[type="text"] { width: 100%; padding: 14px 16px; font-size: 1.1rem; border: 2px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; color: #334155; outline: none; }
+        .form-field label { display: block; font-size: 0.95rem; font-weight: 700; color: #000000; margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 14px 16px; font-size: 1.1rem; border: 2px solid #eaeaea; border-radius: 8px; background-color: #d5d5d5; color: #334155; outline: none; }
         
         /* Zearn Style Custom Elements */
-        .zearn-btn { width: 100%; background-color: #ffcc00; color: #2d3748; border: none; padding: 16px; font-size: 1.2rem; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #d4aa00; transition: transform 0.1s; margin-top: 10px; text-transform: uppercase; }
+        .zearn-btn { width: 100%; background-color: #ffcc00; color: #000000; border: none; padding: 16px; font-size: 1.2rem; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #d4aa00; transition: transform 0.1s; margin-top: 10px; text-transform: uppercase; }
         .zearn-btn:hover { background-color: #ffd633; }
         .zearn-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d4aa00; }
         
@@ -57,9 +59,20 @@
         .modal-btn { padding: 10px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
         .modal-confirm { background: #46178f; color: white; }
         .modal-cancel { background: #e0e0e0; color: #333; }
+
+        .cookie-banner { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: min(92vw, 560px); background: #ffffff; color: #1f2937; padding: 16px 18px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 200; }
+        .cookie-banner p { font-size: 0.95rem; line-height: 1.4; margin-bottom: 10px; }
+        .cookie-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .cookie-btn { padding: 8px 12px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .cookie-accept { background: #ffcc00; color: #2d3748; }
     </style>
 </head>
 <body>
+    <video id="bg-video" class="background-media" autoplay muted loop playsinline>
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+    <div class="background-overlay"></div>
+    <audio id="bg-audio" src="song.mp3" autoplay loop></audio>
 
     <div class="brand-container">
         <div class="brand-title">Quizma</div>
@@ -132,8 +145,65 @@
         </div>
     </div>
 
+    <div id="cookieBanner" class="cookie-banner">
+        <p>Quizma uses cookies to remember your sign-in and keep your saved progress available across sessions.</p>
+        <div class="cookie-actions">
+            <button class="cookie-btn" onclick="dismissCookies()">Dismiss</button>
+            <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>
+        </div>
+    </div>
+
     <script>
         let selectedPlatform = '';
+
+        function showCookiesBanner() {
+            const consent = localStorage.getItem('quizma_cookie_consent');
+            if (!consent) {
+                document.getElementById('cookieBanner').style.display = 'block';
+            }
+        }
+
+        function acceptCookies() {
+            localStorage.setItem('quizma_cookie_consent', 'accepted');
+            document.getElementById('cookieBanner').style.display = 'none';
+        }
+
+        function dismissCookies() {
+            localStorage.setItem('quizma_cookie_consent', 'dismissed');
+            document.getElementById('cookieBanner').style.display = 'none';
+        }
+
+        function persistUser(username, avatar, platform, isOAuth) {
+            const profile = {
+                username,
+                displayName: username,
+                avatar: avatar || `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(username)}`,
+                platform: platform || 'local',
+                isOAuth: Boolean(isOAuth),
+                bio: isOAuth ? `${platform} linked user` : 'Local Quizma member.',
+                score: Number(localStorage.getItem('quizma_score') || 0),
+                streak: Number(localStorage.getItem('quizma_streak') || 0),
+                bestScore: Number(localStorage.getItem('quizma_best_score') || 0),
+                quizzesPlayed: Number(localStorage.getItem('quizma_quizzes_played') || 0),
+                lastPlayed: localStorage.getItem('quizma_last_played') || ''
+            };
+
+            const users = JSON.parse(localStorage.getItem('quizma_local_users') || '[]');
+            const existingIndex = users.findIndex(user => user.username.toLowerCase() === username.toLowerCase());
+            if (existingIndex >= 0) {
+                users[existingIndex] = { ...users[existingIndex], ...profile };
+            } else {
+                users.push(profile);
+            }
+
+            localStorage.setItem('quizma_user', username);
+            localStorage.setItem('quizma_avatar', profile.avatar);
+            localStorage.setItem('quizma_platform_type', profile.platform);
+            localStorage.setItem('quizma_is_oauth', isOAuth ? 'true' : 'false');
+            localStorage.setItem('quizma_profile', JSON.stringify(profile));
+            localStorage.setItem('quizma_local_users', JSON.stringify(users));
+            return profile;
+        }
 
         function openAuthModal(platform, brandingColor) {
             selectedPlatform = platform;
@@ -159,12 +229,7 @@
                 pic = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`;
             }
 
-            localStorage.setItem('quizma_user', name);
-            localStorage.setItem('quizma_avatar', pic);
-            localStorage.setItem('quizma_platform_type', selectedPlatform); 
-            localStorage.setItem('quizma_is_oauth', 'true');
-
-            // Redirecting straight to quiz.html
+            persistUser(name, pic, selectedPlatform, true);
             window.location.href = 'quiz.html';
         }
 
@@ -172,13 +237,21 @@
             e.preventDefault();
             const usernameInput = document.getElementById('username').value.trim();
             if (usernameInput) {
-                localStorage.setItem('quizma_user', usernameInput);
-                localStorage.removeItem('quizma_avatar');
-                localStorage.removeItem('quizma_platform_type');
-                localStorage.removeItem('quizma_is_oauth');
+                persistUser(usernameInput, '', 'local', false);
                 window.location.href = 'quiz.html';
             }
         }
+
+        window.addEventListener('load', showCookiesBanner);
+
+        const bgAudio = document.getElementById('bg-audio');
+        const startBackgroundAudio = () => {
+            if (bgAudio && typeof bgAudio.play === 'function') {
+                bgAudio.play().catch(() => {});
+            }
+        };
+        document.addEventListener('click', startBackgroundAudio, { once: true });
+        window.addEventListener('load', startBackgroundAudio);
     </script>
 </body>
 </html>
