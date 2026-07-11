@@ -750,12 +750,6 @@
         }
         const app = new QuizmaEngine();
 
-        const bgAudio = document.getElementById('bg-audio');
-        const startBackgroundAudio = () => {
-            if (bgAudio && typeof bgAudio.play === 'function') {
-                bgAudio.play().catch(() => {});
-            }
-        };
         document.addEventListener('click', startBackgroundAudio, { once: true });
         window.addEventListener('load', startBackgroundAudio);
     </script>
