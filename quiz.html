@@ -106,9 +106,6 @@
     </style>
 </head>
 <body>
-    <div class="background-overlay"></div>
-    <audio id="bg-audio" src="song.mp3" autoplay loop></audio>
-
     <!-- USER IDENTITY DISPLAY NODE -->
     <div id="networkBadge" class="network-profile-badge">
         <img id="badgeImg" class="badge-pic" src="" alt="Avatar">
@@ -244,17 +241,7 @@
             <iframe id="sonicEmulatorFrame" class="emulator-frame" src="about:blank"></iframe>
         </div>
     </div>
-
-    <button id="chat-toggle-btn" class="action-btn secondary-btn" style="position: fixed; right: 20px; top: 56px; z-index: 60; margin-top: 0; padding: 8px 12px;" onclick="app.toggleChatSidebar()">Hide Chat</button>
-    <aside id="chat-sidebar" class="chat-sidebar" aria-label="Local chat sidebar">
-        <div class="chat-header">Local Chat</div>
-        <div id="chat-messages" class="chat-messages"></div>
-        <div class="chat-input-row">
-            <input id="chat-input" type="text" placeholder="Say something..." maxlength="220">
-            <button id="chat-send-btn" class="action-btn chat-send-btn" type="button">Send</button>
-        </div>
-    </aside>
-
+    
     <script>
         class QuizmaEngine {
             constructor() {
